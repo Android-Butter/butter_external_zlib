@@ -1,5 +1,5 @@
 /* zutil.h -- internal interface and configuration of the compression library
- * Copyright (C) 1995-2012 Jean-loup Gailly.
+ * Copyright (C) 1995-2013 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -13,6 +13,8 @@
 #ifndef ZUTIL_H
 #define ZUTIL_H
 
+#define GCC_VERSION_GE(x) ((__GNUC__-0) * 100 + __GNUC_MINOR__-0 >= x)
+
 #ifdef HAVE_HIDDEN
 #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
 #else
@@ -20,6 +22,36 @@
 #endif
 
 #include "zlib.h"
+
+#if GCC_VERSION_GE(301)
+/* sometimes leaks out of old kernel header */
+#  undef noinline
+#  define noinline __attribute__((__noinline__))
+#else
+#  ifndef noinline
+#    define noinline
+#  endif
+#endif
+
+#if GCC_VERSION_GE(301)
+#  define GCC_ATTR_UNUSED_PARAM __attribute__((__unused__))
+#else
+#  define GCC_ATTR_UNUSED_PARAM
+#endif
+
+#if GCC_VERSION_GE(296)
+#  undef likely
+#  undef unlikely
+#  define likely(x)   __builtin_expect(!!(x), 1)
+#  define unlikely(x) __builtin_expect(!!(x), 0)
+#else
+#  ifndef likely
+#    define likely(x)   (x)
+#  endif
+#  ifndef unlikely
+#    define unlikely(x) (x)
+#  endif
+#endif
 
 #if defined(STDC) && !defined(Z_SOLO)
 #  if !(defined(_WIN32_WCE) && defined(_MSC_VER))
@@ -33,6 +65,12 @@
    typedef long ptrdiff_t;  /* guess -- will be caught if guess is wrong */
 #endif
 
+#define ROUND_TO(x , n) ((x) & ~((n) - 1L))
+#define DIV_ROUNDUP(a, b) (((a) + (b) - 1) / (b))
+#define ALIGN_DIFF(x, n) ((((intptr_t)((x)+(n) - 1L) & ~((intptr_t)(n) - 1L))) - (intptr_t)(x))
+#define ALIGN_DOWN(x, n) (((intptr_t)(x)) & ~((intptr_t)(n) - 1L))
+#define ALIGN_DOWN_DIFF(x, n) (((intptr_t)(x)) & ((intptr_t)(n) - 1L))
+
 #ifndef local
 #  define local static
 #endif
@@ -44,13 +82,13 @@ typedef unsigned short ush;
 typedef ush FAR ushf;
 typedef unsigned long  ulg;
 
-extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
+extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
 
 #define ERR_MSG(err) z_errmsg[Z_NEED_DICT-(err)]
 
 #define ERR_RETURN(strm,err) \
-  return (strm->msg = (char*)ERR_MSG(err), (err))
+  return (strm->msg = ERR_MSG(err), (err))
 /* To be used only when the state is known to be valid */
 
         /* common constants */
@@ -161,6 +199,14 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  endif
 #endif
 
+#ifndef UINT64_C
+#  if defined(_MSC_VER) || defined(__BORLANDC__)
+#    define UINT64_C(c)    (c ## ui64)
+#  else
+#    define UINT64_C(c)    (c ## ULL)
+#  endif
+#endif
+
 #if defined(__BORLANDC__) && !defined(MSDOS)
   #pragma warn -8004
   #pragma warn -8008
@@ -168,7 +214,8 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 /* provide prototypes for these when building zlib without LFS */
-#if !defined(_WIN32) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
+#if !defined(_WIN32) && \
+    (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
     ZEXTERN uLong ZEXPORT adler32_combine64 OF((uLong, uLong, z_off_t));
     ZEXTERN uLong ZEXPORT crc32_combine64 OF((uLong, uLong, z_off_t));
 #endif

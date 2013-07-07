@@ -67,6 +67,7 @@ STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('ZLIB')
   EXPORT SYMBOL("inflate")
   EXPORT SYMBOL("inflateEnd")
   EXPORT SYMBOL("inflateSetDictionary")
+  EXPORT SYMBOL("inflateGetDictionary")
   EXPORT SYMBOL("inflateSync")
   EXPORT SYMBOL("inflateReset")
   EXPORT SYMBOL("inflateInit_")
@@ -201,5 +202,15 @@ STRPGMEXP PGMLVL(*CURRENT) SIGNATURE('ZLIB')
 /********************************************************************/
 
   EXPORT SYMBOL("inflateResetKeep")
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+/*   Version 1.2.8 additional entry points.                         */
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+/********************************************************************/
+/*   *MODULE      INFLATE      ZLIB         01/02/01  00:15:09      */
+/********************************************************************/
+
+  EXPORT SYMBOL("inflateGetDictionary")
 
 ENDPGMEXP
