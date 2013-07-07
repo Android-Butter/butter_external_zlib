@@ -18,23 +18,17 @@ zlib_files := \
 	src/inflate.c \
 	src/inftrees.c \
 	src/inffast.c \
-	src/slhash.c \
 	src/trees.c \
 	src/uncompr.c \
 	src/zutil.c
 
-zlib_arm_files :=
-zlib_arm_flags :=
-
-ifeq ($(ARCH_ARM_HAVE_NEON),true)
-	zlib_arm_files += src/contrib/inflateneon/inflate_fast_copy_neon.s
-	zlib_arm_flags += -D__ARM_HAVE_NEON
-endif
-
 LOCAL_MODULE := libz
 LOCAL_MODULE_TAGS := optional
-LOCAL_CFLAGS += -O3 -DUSE_MMAP $(zlib_arm_flags)
-LOCAL_SRC_FILES := $(zlib_files) $(zlib_arm_files)
+LOCAL_CFLAGS += -O3 -DUSE_MMAP
+LOCAL_SRC_FILES := $(zlib_files)
+ifeq ($(TARGET_ARCH),arm)
+  LOCAL_SDK_VERSION := 9
+endif
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -42,8 +36,11 @@ include $(CLEAR_VARS)
 LOCAL_ARM_MODE := arm
 LOCAL_MODULE := libz
 LOCAL_MODULE_TAGS := optional
-LOCAL_CFLAGS += -O3 -DUSE_MMAP $(zlib_arm_flags)
-LOCAL_SRC_FILES := $(zlib_files) $(zlib_arm_files)
+LOCAL_CFLAGS += -O3 -DUSE_MMAP
+LOCAL_SRC_FILES := $(zlib_files)
+ifeq ($(TARGET_ARCH),arm)
+  LOCAL_SDK_VERSION := 9
+endif
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -84,6 +81,9 @@ include $(CLEAR_VARS)
 LOCAL_SRC_FILES := $(zlib_files)
 LOCAL_MODULE:= libunz
 LOCAL_ARM_MODE := arm
+ifeq ($(TARGET_ARCH),arm)
+  LOCAL_SDK_VERSION := 9
+endif
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
